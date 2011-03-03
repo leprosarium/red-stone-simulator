@@ -1,0 +1,17 @@
+C:\Users\Paul Bruner\Documents\Visual Studio 2010\Projects\Mincraft Simulator\Mincraft Simulator\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Paul Bruner\Documents\Visual Studio 2010\Projects\Mincraft Simulator\Mincraft Simulator\obj\x86\Debug\Mincraft_Simulator.Form1.resources
+C:\Users\Paul Bruner\Documents\Visual Studio 2010\Projects\Mincraft Simulator\Mincraft Simulator\obj\x86\Debug\Mincraft_Simulator.gridControl.resources
+C:\Users\Paul Bruner\Documents\Visual Studio 2010\Projects\Mincraft Simulator\Mincraft Simulator\obj\x86\Debug\Mincraft_Simulator.Properties.Resources.resources
+C:\Users\Paul Bruner\Documents\Visual Studio 2010\Projects\Mincraft Simulator\Mincraft Simulator\obj\x86\Debug\GenerateResource.read.1.tlog
+C:\Users\Paul Bruner\Documents\Visual Studio 2010\Projects\Mincraft Simulator\Mincraft Simulator\obj\x86\Debug\GenerateResource.write.1.tlog
+C:\Users\Paul Bruner\Documents\Visual Studio 2010\Projects\Mincraft Simulator\Mincraft Simulator\bin\Debug\Mincraft Simulator.exe
+C:\Users\Paul Bruner\Documents\Visual Studio 2010\Projects\Mincraft Simulator\Mincraft Simulator\bin\Debug\Mincraft Simulator.pdb
+C:\Users\Paul Bruner\Documents\Visual Studio 2010\Projects\Mincraft Simulator\Mincraft Simulator\bin\Debug\LibNbt.dll
+C:\Users\Paul Bruner\Documents\Visual Studio 2010\Projects\Mincraft Simulator\Mincraft Simulator\bin\Debug\nunit.framework.dll
+C:\Users\Paul Bruner\Documents\Visual Studio 2010\Projects\Mincraft Simulator\Mincraft Simulator\bin\Debug\LibNbt.pdb
+C:\Users\Paul Bruner\Documents\Visual Studio 2010\Projects\Mincraft Simulator\Mincraft Simulator\obj\x86\Debug\Mincraft Simulator.exe
+C:\Users\Paul Bruner\Documents\Visual Studio 2010\Projects\Mincraft Simulator\Mincraft Simulator\obj\x86\Debug\Mincraft Simulator.pdb
+C:\Users\Paul Bruner\Documents\Visual Studio 2010\Projects\Mincraft Simulator\Mincraft Simulator\bin\Debug\OpenTK.dll
+C:\Users\Paul Bruner\Documents\Visual Studio 2010\Projects\Mincraft Simulator\Mincraft Simulator\bin\Debug\OpenTK.GLControl.dll
+C:\Users\Paul Bruner\Documents\Visual Studio 2010\Projects\Mincraft Simulator\Mincraft Simulator\bin\Debug\OpenTK.xml
+C:\Users\Paul Bruner\Documents\Visual Studio 2010\Projects\Mincraft Simulator\Mincraft Simulator\bin\Debug\OpenTK.GLControl.xml
