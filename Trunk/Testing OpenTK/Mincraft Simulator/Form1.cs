@@ -38,8 +38,8 @@ namespace Mincraft_Simulator
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            NbtFile test = new NbtFile("C:\\Users\\Paul Bruner\\Desktop\\Ol Drive\\alu-new-sixteen-bits.schematic",true);
-            test.LoadFile();
+            //NbtFile test = new NbtFile("C:\\Users\\Paul Bruner\\Desktop\\Ol Drive\\alu-new-sixteen-bits.schematic",true);
+           // test.LoadFile();
 
             redBmp = new redstoneBmp();
 
@@ -194,65 +194,121 @@ namespace Mincraft_Simulator
 
         private void glControl_Load(object sender, EventArgs e)
         {
+            int w = glControl.Width;
+            int h = glControl.Height;
             loaded = true;
             GL.ClearColor(Color.SkyBlue);
             // SetupViewport();
+            ResizeScreen(w, h);
             cubeText= LoadTexture("Cube.bmp");
+            buildList();
+
+            
             GL.Enable(EnableCap.Texture2D);
             GL.ShadeModel(ShadingModel.Smooth);
             GL.ClearColor(Color.Black);
             GL.Enable(EnableCap.DepthTest);
             GL.DepthFunc(DepthFunction.Lequal);
+            GL.Enable(EnableCap.Light0);								// Quick And Dirty Lighting (Assumes Light0 Is Set Up)
+            GL.Enable(EnableCap.Lighting);								// Enable Lighting
+            GL.Enable(EnableCap.ColorMaterial);							// Enable Material Coloring
+            GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest);
+            glControl.Refresh();
+        }
+        private void ResizeScreen(int w, int h)
+        {
+            GL.Viewport(0, 0, w, h); // Use all of the glControl painting area
+            GL.MatrixMode(MatrixMode.Projection);
+            //GL.PushMatrix();
+            //OpenTK.Graphics.OpenGL.
+            GL.LoadIdentity();
+            GL.Ortho(-w/64, w/64, -h/64, h/64, -1, 100); // Bottom-left corner pixel has coordinate (0, 0)
+            //GL.Viewport(0, 0, w, h); // Use all of the glControl painting area
+
+            GL.MatrixMode(MatrixMode.Modelview);
+            GL.LoadIdentity();
 
         }
-        static float boxcol[5][3]=								// Array For Box Colors
+        private void DrawTutorial()
         {
-	        // Bright:  Red, Orange, Yellow, Green, Blue
-	        {1.0f,0.0f,0.0f},{1.0f,0.5f,0.0f},{1.0f,1.0f,0.0f},{0.0f,1.0f,0.0f},{0.0f,1.0f,1.0f}
+            int w = glControl.Width;
+            int h = glControl.Height;
+            int xloop;
+            int yloop;
+            
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            GL.BindTexture(TextureTarget.Texture2D, cubeText);
+            for (yloop = 1; yloop < 6; yloop++)							// Loop Through The Y Plane
+            {
+                for (xloop = 0; xloop < yloop; xloop++)					// Loop Through The X Plane
+                {
+                    GL.LoadIdentity();                                  // Reset The View
+                    
+                    // Position The Cubes On The Screen
+			        GL.Translate(1.4f+(xloop*2.8f)-(yloop)*1.4f,((6.0f-yloop)*2.4f)-7.0f,-20.0f);
+                    GL.Rotate(45.0f-(2.0f*yloop)+xrot,1.0f,0.0f,0.0f);		// Tilt The Cubes Up And Down
+			        GL.Rotate(45.0f+yrot,0.0f,1.0f,0.0f);				// Spin Cubes Left And Right
+                    GL.Color3(boxcol[yloop - 1]);
+                    GL.CallList(box);
+                    GL.Color3(topcol[yloop - 1]);					// Select The Top Color
+                    GL.CallList(top);
+                }
+            }
+        }
+        
+        float[][]  boxcol = new float[5][] {
+            new float[3] {1.0f,0.0f,0.0f },
+            new float[3] {1.0f,0.5f,0.0f },
+            new float[3] {1.0f,1.0f,0.0f },
+            new float[3] {0.0f,1.0f,0.0f },
+            new float[3] {0.0f,1.0f,1.0f },    
         };
+      
+           float[][]  topcol = new float[5][] {
+            new float[3] {.5f,0.0f,0.0f },
+            new float[3] {0.5f,0.25f,0.0f },
+            new float[3] {0.5f,0.5f,0.0f },
+            new float[3] {0.0f,0.5f,0.0f},
+            new float[3] {0.0f,0.5f,0.5f },    
+           };
 
-        static float topcol[5][3]=								// Array For Top Colors
-        {
-	        // Dark:  Red, Orange, Yellow, Green, Blue
-	        {.5f,0.0f,0.0f},{0.5f,0.25f,0.0f},{0.5f,0.5f,0.0f},{0.0f,0.5f,0.0f},{0.0f,0.5f,0.5f}
-        }
         int box;
         int top;
-        int xloop;
-        int yloop;
-        float xrot;
-        float yrot;
+        
+        float xrot=0;
+        float yrot=0;
         int cubeText;
         private void buildList()
         {
+ 
             box = GL.GenLists(2);
             GL.NewList(box, ListMode.Compile);
             GL.Begin(BeginMode.Quads);							// Start Drawing Quads
             // Bottom Face
-            GL.TexCoord2(1.0f, 1.0f); GL.Vertex3(-1.0f, -1.0f, -1.0f);	// Top Right Of The Texture and Quad
-            GL.TexCoord2(0.0f, 1.0f); GL.Vertex3(1.0f, -1.0f, -1.0f);	// Top Left Of The Texture and Quad
-            GL.TexCoord2(0.0f, 0.0f); GL.Vertex3(1.0f, -1.0f, 1.0f);	// Bottom Left Of The Texture and Quad
-            GL.TexCoord2(1.0f, 0.0f); GL.Vertex3(-1.0f, -1.0f, 1.0f);	// Bottom Right Of The Texture and Quad
+                GL.TexCoord2(1.0f, 1.0f); GL.Vertex3(-1.0f, -1.0f, -1.0f);	// Top Right Of The Texture and Quad
+                GL.TexCoord2(0.0f, 1.0f); GL.Vertex3(1.0f, -1.0f, -1.0f);	// Top Left Of The Texture and Quad
+                GL.TexCoord2(0.0f, 0.0f); GL.Vertex3(1.0f, -1.0f, 1.0f);	// Bottom Left Of The Texture and Quad
+                GL.TexCoord2(1.0f, 0.0f); GL.Vertex3(-1.0f, -1.0f, 1.0f);	// Bottom Right Of The Texture and Quad
             // Front Face
-            GL.TexCoord2(0.0f, 0.0f); GL.Vertex3(-1.0f, -1.0f, 1.0f);	// Bottom Left Of The Texture and Quad
-            GL.TexCoord2(1.0f, 0.0f); GL.Vertex3(1.0f, -1.0f, 1.0f);	// Bottom Right Of The Texture and Quad
-            GL.TexCoord2(1.0f, 1.0f); GL.Vertex3(1.0f, 1.0f, 1.0f);	// Top Right Of The Texture and Quad
-            GL.TexCoord2(0.0f, 1.0f); GL.Vertex3(-1.0f, 1.0f, 1.0f);	// Top Left Of The Texture and Quad
+                GL.TexCoord2(0.0f, 0.0f); GL.Vertex3(-1.0f, -1.0f, 1.0f);	// Bottom Left Of The Texture and Quad
+                GL.TexCoord2(1.0f, 0.0f); GL.Vertex3(1.0f, -1.0f, 1.0f);	// Bottom Right Of The Texture and Quad
+                GL.TexCoord2(1.0f, 1.0f); GL.Vertex3(1.0f, 1.0f, 1.0f);	// Top Right Of The Texture and Quad
+                GL.TexCoord2(0.0f, 1.0f); GL.Vertex3(-1.0f, 1.0f, 1.0f);	// Top Left Of The Texture and Quad
             // Back Face
-            GL.TexCoord2(1.0f, 0.0f); GL.Vertex3(-1.0f, -1.0f, -1.0f);	// Bottom Right Of The Texture and Quad
-            GL.TexCoord2(1.0f, 1.0f); GL.Vertex3(-1.0f, 1.0f, -1.0f);	// Top Right Of The Texture and Quad
-            GL.TexCoord2(0.0f, 1.0f); GL.Vertex3(1.0f, 1.0f, -1.0f);	// Top Left Of The Texture and Quad
-            GL.TexCoord2(0.0f, 0.0f); GL.Vertex3(1.0f, -1.0f, -1.0f);	// Bottom Left Of The Texture and Quad
+                GL.TexCoord2(1.0f, 0.0f); GL.Vertex3(-1.0f, -1.0f, -1.0f);	// Bottom Right Of The Texture and Quad
+                GL.TexCoord2(1.0f, 1.0f); GL.Vertex3(-1.0f, 1.0f, -1.0f);	// Top Right Of The Texture and Quad
+                GL.TexCoord2(0.0f, 1.0f); GL.Vertex3(1.0f, 1.0f, -1.0f);	// Top Left Of The Texture and Quad
+                GL.TexCoord2(0.0f, 0.0f); GL.Vertex3(1.0f, -1.0f, -1.0f);	// Bottom Left Of The Texture and Quad
             // Right face
-            GL.TexCoord2(1.0f, 0.0f); GL.Vertex3(1.0f, -1.0f, -1.0f);	// Bottom Right Of The Texture and Quad
-            GL.TexCoord2(1.0f, 1.0f); GL.Vertex3(1.0f, 1.0f, -1.0f);	// Top Right Of The Texture and Quad
-            GL.TexCoord2(0.0f, 1.0f); GL.Vertex3(1.0f, 1.0f, 1.0f);	// Top Left Of The Texture and Quad
-            GL.TexCoord2(0.0f, 0.0f); GL.Vertex3(1.0f, -1.0f, 1.0f);	// Bottom Left Of The Texture and Quad
+                GL.TexCoord2(1.0f, 0.0f); GL.Vertex3(1.0f, -1.0f, -1.0f);	// Bottom Right Of The Texture and Quad
+                GL.TexCoord2(1.0f, 1.0f); GL.Vertex3(1.0f, 1.0f, -1.0f);	// Top Right Of The Texture and Quad
+                GL.TexCoord2(0.0f, 1.0f); GL.Vertex3(1.0f, 1.0f, 1.0f);	// Top Left Of The Texture and Quad
+                GL.TexCoord2(0.0f, 0.0f); GL.Vertex3(1.0f, -1.0f, 1.0f);	// Bottom Left Of The Texture and Quad
             // Left Face
-            GL.TexCoord2(0.0f, 0.0f); GL.Vertex3(-1.0f, -1.0f, -1.0f);	// Bottom Left Of The Texture and Quad
-            GL.TexCoord2(1.0f, 0.0f); GL.Vertex3(-1.0f, -1.0f, 1.0f);	// Bottom Right Of The Texture and Quad
-            GL.TexCoord2(1.0f, 1.0f); GL.Vertex3(-1.0f, 1.0f, 1.0f);	// Top Right Of The Texture and Quad
-            GL.TexCoord2(0.0f, 1.0f); GL.Vertex3(-1.0f, 1.0f, -1.0f);	// Top Left Of The Texture and Quad
+                GL.TexCoord2(0.0f, 0.0f); GL.Vertex3(-1.0f, -1.0f, -1.0f);	// Bottom Left Of The Texture and Quad
+                GL.TexCoord2(1.0f, 0.0f); GL.Vertex3(-1.0f, -1.0f, 1.0f);	// Bottom Right Of The Texture and Quad
+                GL.TexCoord2(1.0f, 1.0f); GL.Vertex3(-1.0f, 1.0f, 1.0f);	// Top Right Of The Texture and Quad
+                GL.TexCoord2(0.0f, 1.0f); GL.Vertex3(-1.0f, 1.0f, -1.0f);	// Top Left Of The Texture and Quad
             GL.End();
             GL.EndList();
 
@@ -260,10 +316,10 @@ namespace Mincraft_Simulator
             GL.NewList(top, ListMode.Compile);
             GL.Begin(BeginMode.Quads);							// Start Drawing Quad
 			// Top Face
-			GL.TexCoord2(0.0f, 1.0f); GL.Vertex3(-1.0f,  1.0f, -1.0f);	// Top Left Of The Texture and Quad
-			GL.TexCoord2(0.0f, 0.0f); GL.Vertex3(-1.0f,  1.0f,  1.0f);	// Bottom Left Of The Texture and Quad
-			GL.TexCoord2(1.0f, 0.0f); GL.Vertex3( 1.0f,  1.0f,  1.0f);	// Bottom Right Of The Texture and Quad
-			GL.TexCoord2(1.0f, 1.0f); GL.Vertex3( 1.0f,  1.0f, -1.0f);	// Top Right Of The Texture and Quad
+			    GL.TexCoord2(0.0f, 1.0f); GL.Vertex3(-1.0f,  1.0f, -1.0f);	// Top Left Of The Texture and Quad
+			    GL.TexCoord2(0.0f, 0.0f); GL.Vertex3(-1.0f,  1.0f,  1.0f);	// Bottom Left Of The Texture and Quad
+			    GL.TexCoord2(1.0f, 0.0f); GL.Vertex3( 1.0f,  1.0f,  1.0f);	// Bottom Right Of The Texture and Quad
+			    GL.TexCoord2(1.0f, 1.0f); GL.Vertex3( 1.0f,  1.0f, -1.0f);	// Top Right Of The Texture and Quad
 		    GL.End();
             GL.EndList();
         }
@@ -272,20 +328,20 @@ namespace Mincraft_Simulator
             if (!loaded) // Play nice
                 return;
 
-            if (!loaded)
-                return;
-            
+            /*
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             GL.MatrixMode(MatrixMode.Modelview);
             GL.LoadIdentity();
             GL.Color3(Color.Yellow);
             GL.Begin(BeginMode.Triangles);
-            GL.Vertex2(10, 20);
-            GL.Vertex2(100, 20);
-            GL.Vertex2(100, 50);
+                GL.Vertex2(10, 20);
+                GL.Vertex2(100, 20);
+                GL.Vertex2(100, 50);
             GL.End();
-
+            */
+            DrawTutorial();
+ 
             glControl.SwapBuffers();
         }
         static int LoadTexture(string filename)
@@ -322,6 +378,41 @@ namespace Mincraft_Simulator
             GL.Ortho(0, w, 0, h, -1, 1); // Bottom-left corner pixel has coordinate (0, 0)
             GL.Viewport(0, 0, w, h); // Use all of the glControl painting area
         }
-      
+        private void TutorialInit()
+        {
+
+        }
+
+        private void glControl_KeyPress(object sender, KeyPressEventArgs e)
+        {
+        
+        }
+        bool tempKey = false;
+        private void glControl_KeyDown(object sender, KeyEventArgs e)
+        {
+
+        }
+
+        private void glControl_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (Keys.Up == e.KeyCode)
+            {
+                xrot -= 0.2f;
+            }
+
+            if (Keys.Left == e.KeyCode)							// Left Arrow Being Pressed?
+            {
+                yrot -= 0.2f;							// If So Spin Cubes Left
+            }
+            if (Keys.Right == e.KeyCode)							// Right Arrow Being Pressed?
+            {
+                yrot += 0.2f;							// If So Spin Cubes Right
+            }
+            if (Keys.Down == e.KeyCode)							// Down Arrow Being Pressed?
+            {
+                xrot += 0.2f;							// If So Tilt Cubes Down
+            }
+            glControl.Refresh();
+        }
     }
 }

@@ -11,7 +11,7 @@ namespace Mincraft_Simulator
 {
     public partial class gridControl : UserControl
     {
-        Bitmap mainDisplay;
+
         Point CurrentMousePosition;
 
         public gridControl()
