@@ -99,6 +99,9 @@
     <Content Include="Cube.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="LibNbt.dll" />
+    <Content Include="LibNbt.pdb" />
+    <Content Include="nunit.framework.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
