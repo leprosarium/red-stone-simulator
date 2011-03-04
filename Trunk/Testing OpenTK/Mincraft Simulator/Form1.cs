@@ -180,30 +180,76 @@ namespace Mincraft_Simulator
         Stopwatch sw = new Stopwatch();
         void Application_Idle(object sender, EventArgs e)
         {
-            if (sw.ElapsedMilliseconds > 60)
+            if (sw.ElapsedMilliseconds > 600 && loaded)
             {
                 sw.Restart();
                 glControl.Invalidate();
             }
             if (!sw.IsRunning)
                 sw.Start();
-            //sw.Stop();
-           // double milliseconds = sw.Elapsed.TotalMilliseconds;
-           // sw.Reset();
-           // sw.Start();
 
-           // float deltaRotation = (float)milliseconds / 20.0f;
-           // Vector3 lookatPoint = new Vector3((float)Math.Cos(angleX), angleY, (float)Math.Sin(angleX));
-            //cameraMatrix = Matrix4.LookAt(location, location + lookatPoint, up);
-           // angleY = 0.001f;
-           // angleX = 0; // 0.001f;
-           // cameraMatrix = Matrix4.Mult(cameraMatrix, Matrix4.CreateRotationY(angleY * deltaRotation));
-           // cameraMatrix = Matrix4.Mult(cameraMatrix, Matrix4.CreateRotationX(angleX * deltaRotation));
-          //  cameraMatrix = Matrix4.Mult(cameraMatrix, Matrix4.CreateRotationZ(angleX * deltaRotation));	
-            
-            
-            //glControl.Invalidate();
+        }
+        void drawcube(int color, float lado)
+        {
 
+            GL.FrontFace(FrontFaceDirection.Ccw);
+            GL.BindTexture(TextureTarget.Texture2D, cubeText);
+
+            GL.Begin(BeginMode.Quads);
+            GL.TexCoord2(0.0f, 1.0f);
+            GL.Vertex3(-lado, lado, lado);
+            GL.TexCoord2(0.0f, 0.0f);
+            GL.Vertex3(-lado, -lado, lado);
+            GL.TexCoord2(1.0f, 0.0f);
+            GL.Vertex3(lado, -lado, lado);
+            GL.TexCoord2(1.0f, 1.0f);
+            GL.Vertex3(lado, lado, lado);
+
+            GL.TexCoord2(0.0f, 1.0f);
+            GL.Vertex3(lado, lado, -lado);
+            GL.TexCoord2(0.0f, 0.0f);
+            GL.Vertex3(lado, -lado, -lado);
+            GL.TexCoord2(1.0f, 0.0f);
+            GL.Vertex3(-lado, -lado, -lado);
+            GL.TexCoord2(1.0f, 1.0f);
+            GL.Vertex3(-lado, lado, -lado);
+
+            GL.TexCoord2(0.0f, 1.0f);
+            GL.Vertex3(lado, lado, lado);
+            GL.TexCoord2(0.0f, 0.0f);
+            GL.Vertex3(lado, -lado, lado);
+            GL.TexCoord2(1.0f, 0.0f);
+            GL.Vertex3(lado, -lado, -lado);
+            GL.TexCoord2(1.0f, 1.0f);
+            GL.Vertex3(lado, lado, -lado);
+
+            GL.TexCoord2(0.0f, 1.0f);
+            GL.Vertex3(-lado, lado, -lado);
+            GL.TexCoord2(0.0f, 0.0f);
+            GL.Vertex3(-lado, -lado, -lado);
+            GL.TexCoord2(1.0f, 0.0f);
+            GL.Vertex3(-lado, -lado, lado);
+            GL.TexCoord2(1.0f, 1.0f);
+            GL.Vertex3(-lado, lado, lado);
+
+            GL.TexCoord2(0.0f, 1.0f);
+            GL.Vertex3(-lado, lado, lado);
+            GL.TexCoord2(0.0f, 0.0f);
+            GL.Vertex3(lado, lado, lado);
+            GL.TexCoord2(1.0f, 0.0f);
+            GL.Vertex3(lado, lado, -lado);
+            GL.TexCoord2(1.0f, 1.0f);
+            GL.Vertex3(-lado, lado, -lado);
+
+            GL.TexCoord2(0.0f, 1.0f);
+            GL.Vertex3(-lado, -lado, -lado);
+            GL.TexCoord2(0.0f, 0.0f);
+            GL.Vertex3(lado, -lado, -lado);
+            GL.TexCoord2(1.0f, 0.0f);
+            GL.Vertex3(lado, -lado, lado);
+            GL.TexCoord2(1.0f, 1.0f);
+            GL.Vertex3(-lado, -lado, lado);
+            GL.End();
         }
 
         void Render()
@@ -211,60 +257,106 @@ namespace Mincraft_Simulator
             	
             DrawTutorial();
         }
+        #region ScrewingAround
+        float tiltY, zoom, up, side;
 
+        void display()
+        {
+            int x,y,z;
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            GL.MatrixMode(MatrixMode.Modelview);
+            GL.Enable(EnableCap.CullFace);
+            GL.InitNames();
+            GL.PushName(0);
+
+            GL.LoadIdentity();
+            GL.Translate(side, 0, zoom - 25.0f);
+            GL.Rotate(up, 1.0f, 0.0f, 0.0f);
+            GL.Rotate(tiltY, 0.0f, 1.0f, 0.0f);
+
+            int side1 = 10;
+            int side2 = 10;
+            int side3 = 10;
+
+            for (x = 1; x < side1 - 1; x++)
+                for (y = 1; y < side2 - 1; y++)
+                    for (z = 1; z < side3 - 1; z++)
+                    {
+                        GL.PushMatrix();
+                        GL.Translate(x - (side1 - 1) / 2.0f, y - (side2 - 1) / 2.0f,  z - (side3 - 1) / 2.0f);
+                        GL.LoadName(x * side2 * side3 + y * side3 + z);
+                        GL.CallList(2); // hard code it
+                        //glCallList(g->campoV[x][y][z] != NUEVO ? g->campoV[x][y][z] + 1 : 1);
+                        GL.PopMatrix();
+                    }
+            glControl.SwapBuffers();
+        }
+       
+        #endregion
         private void glControl_Load(object sender, EventArgs e)
         {
-            cameraMatrix = Matrix4.Identity;
-            location = new OpenTK.Vector3(0f, -10f, 0f);
-   
-            loaded = true;
             sw.Start();
             Application.Idle += Application_Idle;
-            
+            glControl.Width = 640;
+            glControl.Height = 480;
+            int w = glControl.Width;
+            int h = glControl.Height;
+            GL.Viewport(0, 0, w, h); // Use all of the glControl painting area
 
-            SetupViewport();
-           // ResizeScreen(w, h);
-            cubeText= LoadTexture("Cube.bmp");
-            buildList();
-            cubepositions();
-
-            
             GL.Enable(EnableCap.Texture2D);
-            GL.ShadeModel(ShadingModel.Smooth);
-            GL.ClearColor(Color.Black);
+            GL.ClearColor(Color.White);
+            GL.ClearDepth(1.0d);
             GL.Enable(EnableCap.DepthTest);
+            GL.ShadeModel(ShadingModel.Smooth);
+            GL.LoadIdentity();
+           
+            cubeText= LoadTexture("Cube.bmp");
+            // 29 empty lists
+            GL.GenLists(29);
+            for (int i = 0; i < 29; i++)
+            {
+                GL.NewList(i + 1, ListMode.Compile);
+                drawcube(1, 0.25f);
+                GL.EndList();
+            }
+
+            
+            gluPerspective(60f, (float)(w / h), 1.0f, 100f);
+            GL.MatrixMode(MatrixMode.Modelview);
+
+
+            loaded = true;
+            glControl.Refresh();
+        }
+        private void GLSettings()
+        {
+            GL.Enable(EnableCap.Texture2D);
+            GL.ClearColor(Color.White);
+            GL.ClearDepth(1.0d);
+            GL.Enable(EnableCap.DepthTest);
+            GL.ShadeModel(ShadingModel.Smooth);
+            
+            
             GL.DepthFunc(DepthFunction.Lequal);
             GL.Enable(EnableCap.Light0);								// Quick And Dirty Lighting (Assumes Light0 Is Set Up)
             GL.Enable(EnableCap.Lighting);								// Enable Lighting
             GL.Enable(EnableCap.ColorMaterial);							// Enable Material Coloring
             GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest);
-            glControl.Refresh();
         }
         private void SetupViewport()
         {
             int w = glControl.Width;
             int h = glControl.Height;
             GL.Viewport(0, 0, w, h); // Use all of the glControl painting area
+            GL.ClearColor(Color.White);
             GL.MatrixMode(MatrixMode.Projection);
-            GL.LoadIdentity();
-            gluPerspective(60f, (float)(w / h), 1.0f, 100f);
-            GL.MatrixMode(MatrixMode.Modelview);
+            
         }
         void gluPerspective(float fov, float aspect, float near, float far)
         {
             double rad = (Math.PI / 180d) * fov;
             double range = near * Math.Tan(fov / 2d);
             GL.Frustum(-range * aspect, range * aspect, -range, range, near, far);
-        }
-
-        void cubepositions()
-        {
-            Random rand = new Random();
-            for (int i = 0; i < 10; i++)
-            {
-                positionz[i] = rand.Next() % 5 + 5;
-                positionx[i] = rand.Next() % 5 + 5;
-            }
         }
 
         
@@ -415,15 +507,16 @@ namespace Mincraft_Simulator
         {
             if (!loaded) // Play nice
                 return;
-            GL.ClearColor(Color.Black);
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            GL.LoadIdentity();
-            camera();
+            display();
+           // GL.ClearColor(Color.Black);
+        //    GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+        //    GL.LoadIdentity();
+       //     camera();
             //enable();
-            DrawTutorial();
+       //     DrawTutorial();
             //cube(); //call the cube drawing function
-            glControl.SwapBuffers();
-            angle++;
+       //     glControl.SwapBuffers();
+       //     angle++;
         }
         void enable()
         {
@@ -493,10 +586,7 @@ namespace Mincraft_Simulator
         {
            
         }
-        private OpenTK.Matrix4 cameraMatrix;
-        private float[] mouseSpeed = new float[2];
-        private OpenTK.Vector3 location;
-        private OpenTK.Vector3 up = new OpenTK.Vector3(0f, 1f, 0f);
+
         private float pitch = 0.0f;
         private float facing = 0.0f;
         private int _mouseStartX = 0;
@@ -585,6 +675,8 @@ namespace Mincraft_Simulator
                 xpos += (float)(Math.Sin(yrotrad)) ;
                 zpos -= (float)(Math.Cos(yrotrad)) ;
                 ypos -= (float)(Math.Sin(xrotrad)) ;
+                if (up <= 45.0)
+                        up += 0.25f;
             }
             if (e.KeyChar=='s')
             {
