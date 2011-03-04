@@ -344,7 +344,7 @@ namespace Mincraft_Simulator
  
             glControl.SwapBuffers();
         }
-        static int LoadTexture(string filename)
+        private int LoadTexture(string filename)
         {
             if (String.IsNullOrEmpty(filename))
                 throw new ArgumentException(filename);
@@ -352,7 +352,8 @@ namespace Mincraft_Simulator
             int id = GL.GenTexture();
             GL.BindTexture(TextureTarget.Texture2D, id);
  
-            Bitmap bmp = new Bitmap(filename);
+            //Bitmap bmp = new Bitmap(filename);
+            Bitmap bmp = CreateBoxTexture();
             BitmapData bmp_data = bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
  
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bmp_data.Width, bmp_data.Height, 0,
@@ -368,7 +369,17 @@ namespace Mincraft_Simulator
  
             return id;
         }
-       
+
+
+        private Bitmap CreateBoxTexture()
+        {
+            Bitmap tmp = new Bitmap(100, 100, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            Graphics g = Graphics.FromImage(tmp);
+            g.Clear(Color.Yellow);
+            g.DrawRectangle(new Pen(Brushes.Black, 10f), 0, 0, 100, 100);
+            g.Dispose();
+            return tmp;
+        }
         private void SetupViewport()
         {
             int w = glControl.Width;
