@@ -10,9 +10,11 @@ using NUnit.Framework;
 using LibNbt.Tags;
 using LibNbt;
 using System.IO;
+using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using System.Drawing.Imaging;
+using System.Diagnostics;
 
 
 namespace Mincraft_Simulator
@@ -30,7 +32,8 @@ namespace Mincraft_Simulator
         byte[] rBlocks;
         byte[] rData;
         bool loaded = false;
-
+        float[] positionz = new float[10];
+        float[] positionx = new float[10];
         public Form1()
         {
             InitializeComponent();
@@ -166,7 +169,6 @@ namespace Mincraft_Simulator
 
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
-            int yoffset = 50;
             if (paintIt)
             {
                 
@@ -175,33 +177,56 @@ namespace Mincraft_Simulator
 
             }
         }
-
-        private void Form1_KeyPress(object sender, KeyPressEventArgs e)
+        Stopwatch sw = new Stopwatch();
+        void Application_Idle(object sender, EventArgs e)
         {
-            if (e.KeyChar == 'w')
+            if (sw.ElapsedMilliseconds > 60)
             {
-                currentZ += 1;
-                if (currentZ > rZmax) currentZ = rZmax;
-                this.Refresh();
+                sw.Restart();
+                glControl.Invalidate();
             }
-            if (e.KeyChar == 's')
-            {
-                currentZ -= 1;
-                if (currentZ < 0) currentZ = 0;
-                this.Refresh();
-            }
+            if (!sw.IsRunning)
+                sw.Start();
+            //sw.Stop();
+           // double milliseconds = sw.Elapsed.TotalMilliseconds;
+           // sw.Reset();
+           // sw.Start();
+
+           // float deltaRotation = (float)milliseconds / 20.0f;
+           // Vector3 lookatPoint = new Vector3((float)Math.Cos(angleX), angleY, (float)Math.Sin(angleX));
+            //cameraMatrix = Matrix4.LookAt(location, location + lookatPoint, up);
+           // angleY = 0.001f;
+           // angleX = 0; // 0.001f;
+           // cameraMatrix = Matrix4.Mult(cameraMatrix, Matrix4.CreateRotationY(angleY * deltaRotation));
+           // cameraMatrix = Matrix4.Mult(cameraMatrix, Matrix4.CreateRotationX(angleX * deltaRotation));
+          //  cameraMatrix = Matrix4.Mult(cameraMatrix, Matrix4.CreateRotationZ(angleX * deltaRotation));	
+            
+            
+            //glControl.Invalidate();
+
+        }
+
+        void Render()
+        {
+            	
+            DrawTutorial();
         }
 
         private void glControl_Load(object sender, EventArgs e)
         {
-            int w = glControl.Width;
-            int h = glControl.Height;
+            cameraMatrix = Matrix4.Identity;
+            location = new OpenTK.Vector3(0f, -10f, 0f);
+   
             loaded = true;
-            GL.ClearColor(Color.SkyBlue);
-            // SetupViewport();
-            ResizeScreen(w, h);
+            sw.Start();
+            Application.Idle += Application_Idle;
+            
+
+            SetupViewport();
+           // ResizeScreen(w, h);
             cubeText= LoadTexture("Cube.bmp");
             buildList();
+            cubepositions();
 
             
             GL.Enable(EnableCap.Texture2D);
@@ -215,20 +240,43 @@ namespace Mincraft_Simulator
             GL.Hint(HintTarget.PerspectiveCorrectionHint, HintMode.Nicest);
             glControl.Refresh();
         }
-        private void ResizeScreen(int w, int h)
+        private void SetupViewport()
         {
+            int w = glControl.Width;
+            int h = glControl.Height;
             GL.Viewport(0, 0, w, h); // Use all of the glControl painting area
             GL.MatrixMode(MatrixMode.Projection);
-            //GL.PushMatrix();
-            //OpenTK.Graphics.OpenGL.
             GL.LoadIdentity();
-            GL.Ortho(-w/64, w/64, -h/64, h/64, -1, 100); // Bottom-left corner pixel has coordinate (0, 0)
-            //GL.Viewport(0, 0, w, h); // Use all of the glControl painting area
-
+            gluPerspective(60f, (float)(w / h), 1.0f, 100f);
             GL.MatrixMode(MatrixMode.Modelview);
-            GL.LoadIdentity();
-
         }
+        void gluPerspective(float fov, float aspect, float near, float far)
+        {
+            double rad = (Math.PI / 180d) * fov;
+            double range = near * Math.Tan(fov / 2d);
+            GL.Frustum(-range * aspect, range * aspect, -range, range, near, far);
+        }
+
+        void cubepositions()
+        {
+            Random rand = new Random();
+            for (int i = 0; i < 10; i++)
+            {
+                positionz[i] = rand.Next() % 5 + 5;
+                positionx[i] = rand.Next() % 5 + 5;
+            }
+        }
+
+        
+    
+        void camera()
+        {
+            GL.Rotate(xrot, 1f, 0f, 0f);
+            GL.Rotate(yrot, 0f, 1f, 0f);
+            GL.Translate(-xpos, -ypos, -zpos);
+        }
+        float xpos=0, ypos=0, zpos=0;
+
         private void DrawTutorial()
         {
             int w = glControl.Width;
@@ -236,22 +284,26 @@ namespace Mincraft_Simulator
             int xloop;
             int yloop;
             
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+            //GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             GL.BindTexture(TextureTarget.Texture2D, cubeText);
             for (yloop = 1; yloop < 6; yloop++)							// Loop Through The Y Plane
             {
                 for (xloop = 0; xloop < yloop; xloop++)					// Loop Through The X Plane
                 {
-                    GL.LoadIdentity();                                  // Reset The View
+                    //GL.LoadIdentity();                                  // Reset The View
                     
                     // Position The Cubes On The Screen
+                    GL.PushMatrix(); //?
 			        GL.Translate(1.4f+(xloop*2.8f)-(yloop)*1.4f,((6.0f-yloop)*2.4f)-7.0f,-20.0f);
-                    GL.Rotate(45.0f-(2.0f*yloop)+xrot,1.0f,0.0f,0.0f);		// Tilt The Cubes Up And Down
-			        GL.Rotate(45.0f+yrot,0.0f,1.0f,0.0f);				// Spin Cubes Left And Right
+                    //GL.Rotate(45.0f-(2.0f*yloop)+xrot,1.0f,0.0f,0.0f);		// Tilt The Cubes Up And Down
+			        //GL.Rotate(45.0f+yrot,0.0f,1.0f,0.0f);				// Spin Cubes Left And Right
+                    GL.Rotate(45.0f,1.0f,0.0f,0.0f);		// Tilt The Cubes Up And Down
+                    GL.Rotate(45.0f,0.0f,1.0f,0.0f);				// Spin Cubes Left And Right
                     GL.Color3(boxcol[yloop - 1]);
                     GL.CallList(box);
                     GL.Color3(topcol[yloop - 1]);					// Select The Top Color
                     GL.CallList(top);
+                    GL.PopMatrix(); //?
                 }
             }
         }
@@ -278,6 +330,42 @@ namespace Mincraft_Simulator
         float xrot=0;
         float yrot=0;
         int cubeText;
+        private void gluBox(float size)
+        {
+            GL.Begin(BeginMode.Quads);							// Start Drawing Quads
+            // Bottom Face
+            GL.TexCoord2(size, size); GL.Vertex3(-size, -size, -size);	// Top Right Of The Texture and Quad
+            GL.TexCoord2(0.0f, size); GL.Vertex3(size, -size, -size);	// Top Left Of The Texture and Quad
+            GL.TexCoord2(0.0f, 0.0f); GL.Vertex3(size, -size, size);	// Bottom Left Of The Texture and Quad
+            GL.TexCoord2(size, 0.0f); GL.Vertex3(-size, -size, size);	// Bottom Right Of The Texture and Quad
+            // Front Face
+            GL.TexCoord2(0.0f, 0.0f); GL.Vertex3(-size, -size, size);	// Bottom Left Of The Texture and Quad
+            GL.TexCoord2(size, 0.0f); GL.Vertex3(size, -size, size);	// Bottom Right Of The Texture and Quad
+            GL.TexCoord2(size, size); GL.Vertex3(size, size, size);	// Top Right Of The Texture and Quad
+            GL.TexCoord2(0.0f, size); GL.Vertex3(-size, size, size);	// Top Left Of The Texture and Quad
+            // Back Face
+            GL.TexCoord2(size, 0.0f); GL.Vertex3(-size, -size, -size);	// Bottom Right Of The Texture and Quad
+            GL.TexCoord2(size, size); GL.Vertex3(-size, size, -size);	// Top Right Of The Texture and Quad
+            GL.TexCoord2(0.0f, size); GL.Vertex3(size, size, -size);	// Top Left Of The Texture and Quad
+            GL.TexCoord2(0.0f, 0.0f); GL.Vertex3(size, -size, -size);	// Bottom Left Of The Texture and Quad
+            // Right face
+            GL.TexCoord2(size, 0.0f); GL.Vertex3(size, -size, -size);	// Bottom Right Of The Texture and Quad
+            GL.TexCoord2(size, size); GL.Vertex3(size, size, -size);	// Top Right Of The Texture and Quad
+            GL.TexCoord2(0.0f, size); GL.Vertex3(size, size, size);	// Top Left Of The Texture and Quad
+            GL.TexCoord2(0.0f, 0.0f); GL.Vertex3(size, -size, size);	// Bottom Left Of The Texture and Quad
+            // Left Face
+            GL.TexCoord2(0.0f, 0.0f); GL.Vertex3(-size, -size, -size);	// Bottom Left Of The Texture and Quad
+            GL.TexCoord2(size, 0.0f); GL.Vertex3(-size, -size, size);	// Bottom Right Of The Texture and Quad
+            GL.TexCoord2(size, size); GL.Vertex3(-size, size, size);	// Top Right Of The Texture and Quad
+            GL.TexCoord2(0.0f, size); GL.Vertex3(-size, size, -size);	// Top Left Of The Texture and Quad
+            // Top Face
+            GL.TexCoord2(0.0f, size); GL.Vertex3(-size, size, -size);	// Top Left Of The Texture and Quad
+            GL.TexCoord2(0.0f, 0.0f); GL.Vertex3(-size, size, size);	// Bottom Left Of The Texture and Quad
+            GL.TexCoord2(size, 0.0f); GL.Vertex3(size, size, size);	// Bottom Right Of The Texture and Quad
+            GL.TexCoord2(size, size); GL.Vertex3(size, size, -size);	// Top Right Of The Texture and Quad
+            GL.End();
+
+        }
         private void buildList()
         {
  
@@ -327,23 +415,35 @@ namespace Mincraft_Simulator
         {
             if (!loaded) // Play nice
                 return;
-
-            /*
+            GL.ClearColor(Color.Black);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-            GL.MatrixMode(MatrixMode.Modelview);
             GL.LoadIdentity();
-            GL.Color3(Color.Yellow);
-            GL.Begin(BeginMode.Triangles);
-                GL.Vertex2(10, 20);
-                GL.Vertex2(100, 20);
-                GL.Vertex2(100, 50);
-            GL.End();
-            */
+            camera();
+            //enable();
             DrawTutorial();
- 
+            //cube(); //call the cube drawing function
             glControl.SwapBuffers();
+            angle++;
         }
+        void enable()
+        {
+            GL.Enable(EnableCap.DepthTest); //enable the depth testing
+            GL.Enable(EnableCap.Lighting); //enable the lighting
+            GL.Enable(EnableCap.Light0); //enable LIGHT0, our Diffuse Light
+            GL.ShadeModel(ShadingModel.Smooth); //set the shader to smooth shade
+        }
+        void mouseMovement(int x, int y) 
+        {
+            int diffx=x-lastx; //check the difference between the current x and the last x position
+            int diffy=y-lasty; //check the difference between the current y and the last y position
+            lastx=x; //set lastx to the current x position
+            lasty=y; //set lasty to the current y position
+            xrot += (float) diffy; //set the xrot to xrot with the addition of the difference in the y position
+            yrot += (float) diffx;    //set the xrot to yrot with the addition of the difference in the x position
+        }
+        int lastx, lasty;
+        float angle;
+       
         private int LoadTexture(string filename)
         {
             if (String.IsNullOrEmpty(filename))
@@ -380,25 +480,10 @@ namespace Mincraft_Simulator
             g.Dispose();
             return tmp;
         }
-        private void SetupViewport()
-        {
-            int w = glControl.Width;
-            int h = glControl.Height;
-            GL.MatrixMode(MatrixMode.Projection);
-            GL.LoadIdentity();
-            GL.Ortho(0, w, 0, h, -1, 1); // Bottom-left corner pixel has coordinate (0, 0)
-            GL.Viewport(0, 0, w, h); // Use all of the glControl painting area
-        }
-        private void TutorialInit()
-        {
+   
 
-        }
-
-        private void glControl_KeyPress(object sender, KeyPressEventArgs e)
-        {
+    
         
-        }
-        bool tempKey = false;
         private void glControl_KeyDown(object sender, KeyEventArgs e)
         {
 
@@ -406,24 +491,125 @@ namespace Mincraft_Simulator
 
         private void glControl_KeyUp(object sender, KeyEventArgs e)
         {
-            if (Keys.Up == e.KeyCode)
+           
+        }
+        private OpenTK.Matrix4 cameraMatrix;
+        private float[] mouseSpeed = new float[2];
+        private OpenTK.Vector3 location;
+        private OpenTK.Vector3 up = new OpenTK.Vector3(0f, 1f, 0f);
+        private float pitch = 0.0f;
+        private float facing = 0.0f;
+        private int _mouseStartX = 0;
+        private int _mouseStartY = 0;
+        private float angleX = 0;
+        private float angleY = 0;
+        private float angleXS = 0;
+        private float angleYS = 0;
+        private float distance = 5;
+        private float distanceS = 5;
+        private void glControl_MouseDown(object sender, MouseEventArgs e)
+        {
+            if(e.Button == MouseButtons.Left)
+                mouseDown = true;
+            MouseEventArgs ev = (e as MouseEventArgs);
+            _mouseStartX = ev.X;
+            _mouseStartY = ev.Y;
+
+        }
+
+        private void glControl_MouseMove(object sender, MouseEventArgs e)
+        {
+            MouseEventArgs ev = (e as MouseEventArgs);
+            if (mouseDown && ev.Button == MouseButtons.Left)
+                mouseMovement(e.X, e.Y);
+            if (ev.Button == MouseButtons.Left)
             {
-                xrot -= 0.2f;
+          //      angleX = angleXS + (ev.X - _mouseStartX)*0.5f;// *rotSpeed;
+          //      angleY = angleYS + (ev.Y - _mouseStartY)*0.5f;// *rotSpeed;
+            }
+            if (ev.Button == MouseButtons.Right)
+            {
+           //     distance = Math.Max(2.9f, distanceS + (ev.Y - _mouseStartY) / 10.0f);
             }
 
-            if (Keys.Left == e.KeyCode)							// Left Arrow Being Pressed?
+
+
+            glControl.Invalidate();
+        }
+        void cube () {
+            GL.BindTexture(TextureTarget.Texture2D, cubeText);
+            for (int i=0;i<10;i++)
             {
-                yrot -= 0.2f;							// If So Spin Cubes Left
+                GL.PushMatrix();
+                //GL.LoadIdentity();
+                GL.Translate(-positionx[i + 1] * 10f, 0, -positionz[i + 1] * 10f); //translate the cube
+                GL.Color3(boxcol[1]);
+                gluBox(1);
+                //GL.CallList(box);
+                //GL.CallList(top);
+                // glutSolidCube(2); //draw the cube
+                GL.PopMatrix();
             }
-            if (Keys.Right == e.KeyCode)							// Right Arrow Being Pressed?
+        }
+        bool mouseDown = false;
+        private void glControl_MouseUp(object sender, MouseEventArgs e)
+        {
+            mouseDown = false;
+            MouseEventArgs ev = (e as MouseEventArgs);
+
+            angleXS = angleX;
+            angleYS = angleY;
+            angleX = angleY = 0;
+
+            distanceS = distance;
+
+        }
+  
+        private void glControl_KeyPress(object sender, System.Windows.Forms.KeyPressEventArgs e)
+        {
+            if (e.KeyChar=='q')
             {
-                yrot += 0.2f;							// If So Spin Cubes Right
+                xrot += 1;
+                if (xrot >360) xrot -= 360;
             }
-            if (Keys.Down == e.KeyCode)							// Down Arrow Being Pressed?
+            if (e.KeyChar=='z')
             {
-                xrot += 0.2f;							// If So Tilt Cubes Down
+                xrot -= 1;
+                if (xrot < -360) xrot += 360;
             }
-            glControl.Refresh();
+            if (e.KeyChar=='w')
+            {
+                float xrotrad, yrotrad;
+                yrotrad = (yrot / 180 * 3.141592654f);
+                xrotrad = (xrot / 180 * 3.141592654f); 
+                xpos += (float)(Math.Sin(yrotrad)) ;
+                zpos -= (float)(Math.Cos(yrotrad)) ;
+                ypos -= (float)(Math.Sin(xrotrad)) ;
+            }
+            if (e.KeyChar=='s')
+            {
+                float xrotrad, yrotrad;
+                yrotrad = (yrot / 180 * 3.141592654f);
+                xrotrad = (xrot / 180 * 3.141592654f); 
+                xpos -= (float)(Math.Sin(yrotrad));
+                zpos += (float)(Math.Cos(yrotrad)) ;
+                ypos += (float)(Math.Sin(xrotrad));
+            }
+            if (e.KeyChar=='d')
+            {
+                float yrotrad;
+                yrotrad = (yrot / 180 * 3.141592654f);
+                xpos += (float)(Math.Cos(yrotrad) * 0.2);
+                zpos += (float)(Math.Sin(yrotrad) * 0.2);
+            }
+            if (e.KeyChar=='a')
+            {
+                float yrotrad;
+                yrotrad = (yrot / 180 * 3.141592654f);
+                xpos -= (float)(Math.Cos(yrotrad) * 0.2);
+                zpos -= (float)(Math.Sin(yrotrad) * 0.2);
+            }
+  
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Mincraft_Simulator
     public partial class gridControl : UserControl
     {
 
-        Point CurrentMousePosition;
+ 
 
         public gridControl()
         {
